@@ -1,0 +1,19 @@
+{
+  "name": "quizzer",
+  "version": "1.0.0",
+  "description": "Quiz app using the Open Trivia API. Using React, Node, Express, and MongoDB",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AustinMorrill/quizzer.git"
+  },
+  "author": "Austin Morrill",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/AustinMorrill/quizzer/issues"
+  },
+  "homepage": "https://github.com/AustinMorrill/quizzer#readme"
+}
