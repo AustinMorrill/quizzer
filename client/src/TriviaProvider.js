@@ -103,8 +103,9 @@ export default function TriviaProvider({children}) {
 				}
 			]
 	const [apiKey, setApiKey] = useState('')
+	const [options, setOptions] = useState([5, 9, 'easy'])
 
-		const getApiKey = () => {
+	const getApiKey = () => {
 		Axios
 		.get('https://opentdb.com/api_token.php?command=request')
 		.then(response => {
@@ -113,10 +114,26 @@ export default function TriviaProvider({children}) {
 		.catch(err => console.log(err))
 	}
 
+	const optionsFunc = (questions, difficulty, categories) => {
+		setOptions([questions, difficulty, categories])
+	}
+
+	const getQuestion = (questions, difficulty, categories) => {
+		let getCategory = !options[3] ? '' : options[3]
+		let setDifficulty = `&difficulty=easy`
+		Axios
+			.get(api + `amount=1&category=${getCategory}` + setDifficulty + `&token${apiKey}`)
+			.then(res => {
+				console.log(res.data.results)
+			})
+	}
+
 	return (
 			<context.Provider
 				value={{
 					getApiKey: getApiKey,
+					options: options,
+					optionsFunc: optionsFunc,
 					apiKey: apiKey
 				}}
 			>
