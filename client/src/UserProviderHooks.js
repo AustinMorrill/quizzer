@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react'
 import Axios from 'axios'
+import TriviaProvider from "./TriviaProvider"
+
 const triviaAxios = Axios.create()
 
 const context = createContext(null)
@@ -15,6 +17,8 @@ export default function UserProvider({children}) {
 	const [stats, setStats] = useState([])
 	const [user, setUser] = useState(JSON.parse(localStorage.getItem("user")) || {})
 	const [token, setToken] = useState(localStorage.getItem("token") || "")
+	const triviaContext = React.useContext(TriviaProvider.context)
+	
 
 	const getStats = () => {
 			return triviaAxios.get("/api/stat").then(response => {
@@ -51,6 +55,8 @@ export default function UserProvider({children}) {
 			setUser({})
 			setToken("")
 			setStats([])
+			// console.log(triviaContext)
+			// triviaContext.setTriviaQuestion({ answerArray: [] })
 		}
 
 	return (

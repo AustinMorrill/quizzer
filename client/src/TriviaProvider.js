@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import Axios from 'axios'
-const api = 'https://opentdb.com/api.php?'
+import { sanitize } from "dompurify" //protects from potential xss attacks when using dangerouslySetInnerHTML
+const api = 'https://opentdb.com/api.php'
 const context = React.createContext(null)
 
 export default function TriviaProvider({children}) {
@@ -102,14 +103,17 @@ export default function TriviaProvider({children}) {
 					name: "Cartoon & Animations"
 				}
 			]
-	const [apiKey, setApiKey] = useState('')
-	const [options, setOptions] = useState([5, 9, 'easy'])
+	const [apiKey, setApiKey] = useState(``)
+	const [options, setOptions] = useState([5, 'mixed', [9]])
+	const [triviaQuestion, setTriviaQuestion] = useState()
+	const [finalAnswerArray, setFinalAnswerArray] = useState([])
+	const [totalQuestions, setTotalQuestions] = useState()
 
 	const getApiKey = () => {
 		Axios
 		.get('https://opentdb.com/api_token.php?command=request')
 		.then(response => {
-					setApiKey(response.data.token)
+					setApiKey(`&token=${response.data.token}`)
 				})
 		.catch(err => console.log(err))
 	}
@@ -118,28 +122,61 @@ export default function TriviaProvider({children}) {
 		setOptions([questions, difficulty, categories])
 	}
 
-	const getQuestion = (questions, difficulty, categories) => {
-		let getCategory = !options[3] ? '' : options[3]
-		let setDifficulty = `&difficulty=easy`
-		Axios
-			.get(api + `amount=1&category=${getCategory}` + setDifficulty + `&token${apiKey}`)
-			.then(res => {
-				console.log(res.data.results)
+	const getAllQuestions = async(questions, difficulty, categories) => {
+		let finalQuestions = []
+		let getDifficulty =
+			difficulty === "easy" || difficulty === "medium" || difficulty === "hard"
+				? `&difficulty=${difficulty}`
+				: ``
+
+		for(let i = 0; i < questions; i++){
+			let getCategory =
+				categories.length !== 0
+					? `&category=${categories[Math.floor(Math.random() * categories.length)]}`
+					: ``
+			await getQuestion(getDifficulty, getCategory).then((data)=>{
+				console.log(data)
+				finalQuestions.push(...data)
 			})
 	}
+	setFinalAnswerArray(finalQuestions)
+	setTotalQuestions(questions)
+}
+
+	const getQuestion = (difficulty, categories) => {
+		let getQuestions = `?amount=1`
+
+		return new Promise((resolve, reject) => {
+			Axios.get(api + getQuestions + difficulty + categories + "&encode=base64" + apiKey)
+			.then(response => {
+				return resolve(response.data.results)
+			})
+			.catch(err => {
+				return reject(err.message)
+			})
+		})
+	}
+
 
 	return (
-			<context.Provider
-				value={{
-					getApiKey: getApiKey,
-					options: options,
-					optionsFunc: optionsFunc,
-					apiKey: apiKey
-				}}
-			>
-				{children}
-			</context.Provider>
-		)
+		<context.Provider
+			value={{
+				getApiKey,
+				options,
+				optionsFunc,
+				getQuestion,
+				apiKey,
+				triviaQuestion,
+				setTriviaQuestion,
+				getAllQuestions,
+				setFinalAnswerArray,
+				finalAnswerArray,
+				totalQuestions
+			}}
+		>
+			{children}
+		</context.Provider>
+	)
 
 }
 

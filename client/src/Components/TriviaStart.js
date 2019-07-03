@@ -1,9 +1,8 @@
 import React, { useState, useReducer, useEffect } from 'react';
 import TriviaProvider from "../TriviaProvider"
 import UserProvider from "../UserProviderHooks"
-import { sanitize } from "dompurify" //protects from potential xss attacks when using dangerouslySetInnerHTML
 import Select from "react-select"
-import Navbar from './Navbar'
+import Spinner from "./Spinner"
 
 const selectOptionsDifficulty = [
 	{ value: 'easy', label: 'Easy' },
@@ -25,7 +24,7 @@ const triviaCategoriesState = [
 					id: 9,
 					name: "General Knowledge",
 					value: 'nine',
-					checked: true
+					checked: false
 				},
 				{
 					id: 10,
@@ -155,7 +154,7 @@ const triviaCategoriesState = [
 				},
 				{
 					id: 31,
-					name: "Japanese Anime & Manga",
+					name: "Anime & Manga",
 					value: 'thirtyone',
 					checked: false
 				},
@@ -167,9 +166,9 @@ const triviaCategoriesState = [
 				},
 				{
 					id: 33,
-					name: "Add All Categories",
+					name: "All Categories",
 					value: 'addall',
-					checked: false
+					checked: true
 				}
 			]
 
@@ -207,37 +206,37 @@ const categoryReducer = (state, action) => {
 
 const TriviaStart = (props) => {
 	const [categorysState, dispatch] = useReducer(categoryReducer, triviaCategoriesState)
-	const triviaContext = React.useContext(TriviaProvider.context) //Trivia Provider
-	const userContext = React.useContext(UserProvider.context)
-	// console.log(userContext)
-	const [qArray, setQArray] = useState([9])
+	const triviaContext = React.useContext(TriviaProvider.context) 
+	const userContext = React.useContext(UserProvider.context) 
+	const [qArray, setQArray] = useState([9]) 
 	const [selectedOption, setSelectedOption] = useState({ value: "easy", label: "Easy" })
 	const [selectOptionsQuestinsValue, setSelectOptionsQuestinsValue] = useState({value: 5, label: "Five"})
-
-	const addQArray = (id) => {
-		id = Number(id)
-		if (qArray.findIndex((e) => e === id) === -1){
-			qArray.push(id)			
-		} else {
-			qArray.splice(qArray.indexOf(id), 1)
-		}
-	}
+	const [gettingQuestions, setGettingQuestions] = useState(false)
 
 	const handleChange = cat => {
-			dispatch({ 
-				type: !cat.checked ? "ADD_CAT" : "DEL_CAT", 
-				id: cat.id })
-		}
+		dispatch({ 
+			type: !cat.checked ? "ADD_CAT" : "DEL_CAT", 
+			id: cat.id })
+	}
 
-	const handleSubmit = (e) => {
+	useEffect(()=>{
+		triviaContext.setFinalAnswerArray([])
+		setGettingQuestions(false)
+	},[])
+
+	const handleSubmit = async(e) => {
 		e.preventDefault()
-		triviaContext.optionsFunc(
+		setGettingQuestions(true)
+		await triviaContext.getAllQuestions(
 			selectOptionsQuestinsValue.value,
 			selectedOption.value,
-			!categorysState["24"].checked ? qArray : null
+			!categorysState["24"].checked
+				? categorysState.filter(cat => cat.checked === true).map((e, i) => e.id)
+				: [] //return array with category ids based on categories selected
 		)
 		props.history.push("/trivia")
-	}
+}
+
 
 	//create mapped category buttons with reducer build in
 	const categorys = categorysState.map(cat => {
@@ -245,8 +244,8 @@ const TriviaStart = (props) => {
 				<button
 					className={
 						cat.checked
-							? "flex-1 my-2 mx-1 md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow transition-all outline-none"
-							: "flex-1 my-2 mx-1 md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow outline-none"
+							? "tracking-tighter h-auto w-7/12 my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
+							: "h-auto w-7/12 my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
 					}
 					id={cat.id}
 					key={cat.id}
@@ -263,15 +262,14 @@ const TriviaStart = (props) => {
 				<button
 					className={
 						cat.checked
-							? "flex-1 my-2 mx-1 md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow transition-all outline-none"
-							: "flex-1 my-2 mx-1 md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow outline-none"
+							? "flex-1 h-auto my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
+							: "flex-1 h-auto my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
 					}
 					id={cat.id}
 					key={cat.id}
 					value={cat.value}
 					type='button'
 					onClick={e => {
-						addQArray(e.target.id)
 						handleChange(cat)
 					}}
 				>
@@ -282,8 +280,7 @@ const TriviaStart = (props) => {
 
 	return (
 		<div>
-			<Navbar />
-			<div className='h-screen container mx-auto w-screen flex flex-col items-center'>
+			<div className='container mx-auto w-screen flex flex-col items-center'>
 				<div className='w-11/12 md:text-lg lg:text-xl flex flex-col justify-center'>
 					<form
 						className='w-full flex flex-col justify-center text-center'
@@ -295,57 +292,66 @@ const TriviaStart = (props) => {
 							{categorys}
 							{/* displayed mapped category buttons  */}
 						</div>
-						<Select
-							// className='w-1/2 border border-gray-400 bg-color-white outline-none transition-all'
-							value={selectedOption}
-							onChange={selectedOption => setSelectedOption(selectedOption)}
-							options={selectOptionsDifficulty}
-							theme={theme => ({
-								...theme,
-								borderRadius: 2,
-								colors: {
-									...theme.colors,
-									primary25: "#9bfbc9",
-									primary: "#5beca3"
-								},
-								alignItems: "center",
-								alignText: "center",
-								":before": {
-									outline: "none"
-								}
-							})}
-						/>
-						<Select
-							value={selectOptionsQuestinsValue}
-							onChange={selectOptionsQuestionsValue =>
-								setSelectOptionsQuestinsValue(selectOptionsQuestionsValue)
-							}
-							options={selectOptionsQuestions}
-							theme={theme => ({
-								...theme,
-								borderRadius: 2,
-								colors: {
-									...theme.colors,
-									primary25: "#9bfbc9",
-									primary: "#5beca3"
-								},
-								alignItems: "center",
-								alignText: "center",
-								":before": {
-									outline: "none"
-								}
-							})}
-						/>
 
-						<button
-							type='button'
-							className={"bg-blue-500"}
-							onClick={() => console.log(categorysState['24'].checked, qArray)}
-						>
-							Start Game!
-						</button>
-						<button type='Submit'>Start Game!</button>
+						<div className='flex justify-center'>
+							<Select
+								className='w-2/5 m-1'
+								value={selectedOption}
+								onChange={selectedOption => setSelectedOption(selectedOption)}
+								options={selectOptionsDifficulty}
+								theme={theme => ({
+									...theme,
+									borderRadius: 2,
+									colors: {
+										...theme.colors,
+										primary25: "#9bfbc9",
+										primary: "#5beca3"
+									},
+									alignItems: "center",
+									alignText: "center",
+									":before": {
+										outline: "none"
+									}
+								})}
+							/>
+							<Select
+								className='w-2/5 m-1'
+								value={selectOptionsQuestinsValue}
+								onChange={selectOptionsQuestionsValue =>
+									setSelectOptionsQuestinsValue(selectOptionsQuestionsValue)
+								}
+								options={selectOptionsQuestions}
+								theme={theme => ({
+									...theme,
+									borderRadius: 2,
+									colors: {
+										...theme.colors,
+										primary25: "#9bfbc9",
+										primary: "#5beca3"
+									},
+									alignItems: "center",
+									alignText: "center",
+									":before": {
+										outline: "none"
+									}
+								})}
+							/>
+						</div>
+
+						{!gettingQuestions ? (
+							<button
+								className='flex-1 w-7/12 my-2 mx-1 self-center md:w-5/12 md:flex-none bg-tc-lightest hover:bg-tc-lighter text-gray-900 font-bold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none text-2xl mb-24 h-auto'
+								type='Submit'
+							>
+								Start Game!
+							</button>
+						) : (
+							<div className='flex-1 w-7/12 my-2 mx-1 self-center text-lg md:text-xl md:w-5/12 md:flex-none bg-tc2-lightest hover:bg-tc2-lighter text-gray-900 font-bold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none text-2xl cursor-wait'>
+								Retrieving Questions.... <Spinner /> ...setting up game
+							</div>
+						)}
 					</form>
+					<button type='button' onClick={() => triviaContext.setFinalAnswerArray} />
 				</div>
 			</div>
 		</div>

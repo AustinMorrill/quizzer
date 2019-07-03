@@ -18,14 +18,6 @@
  *
  * @import "tailwindcss/components";
  */
-
-@import url('https://fonts.googleapis.com/css?family=Montserrat|Oswald:300&display=swap');
-
-@responsive {
-  .bg-gradient-blue-to-purple {
-    background-image: linear-gradient(to bottom, blue, white);
-  }
-}
 /**
  * Here you would add any of your custom component classes; stuff that you'd
  * want loaded *before* the utilities so that the utilities could still
@@ -41,6 +33,7 @@
  * @import "components/buttons";
  * @import "components/forms";
  */
+ @tailwind components;
 
 /**
  * This injects all of Tailwind's utility classes, generated based on your

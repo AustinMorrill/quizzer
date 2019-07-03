@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import './App.css';
+// import './App.css';
 import "./index.css"
 // import Login from "./Components/Login.js"
 // import Signup from "./Components/Signup.js"
@@ -20,6 +20,7 @@ const  App = () => {
   return (
 		<Router>
 				<>
+				<Navbar />
 					<Suspense fallback={<Spinner />}>
 						<div className='content__container'>
 							<Switch>
