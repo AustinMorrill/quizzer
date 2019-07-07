@@ -2,6 +2,8 @@ import React, { useState, useReducer, useEffect } from 'react';
 import TriviaProvider from "../TriviaProvider"
 import UserProvider from "../UserProviderHooks"
 import Select from "react-select"
+import Modal from "react-modal"
+import Fade from "react-reveal/Fade"
 import Spinner from "./Spinner"
 
 const selectOptionsDifficulty = [
@@ -18,13 +20,14 @@ const selectOptionsQuestions = [
 	{ value: 50, label: 'Fifty'}
 ]
 
+Modal.setAppElement("#root")
 
 const triviaCategoriesState = [
 				{
 					id: 9,
 					name: "General Knowledge",
 					value: 'nine',
-					checked: false
+					checked: true
 				},
 				{
 					id: 10,
@@ -46,7 +49,7 @@ const triviaCategoriesState = [
 				},
 				{
 					id: 13,
-					name: "Musicals & Theatres",
+					name: "Musicals & Theater",
 					value: 'thirteen',
 					checked: false
 				},
@@ -82,7 +85,7 @@ const triviaCategoriesState = [
 				},
 				{
 					id: 19,
-					name: "Mathematics",
+					name: "Math",
 					value: 'nineteen',
 					checked: false
 				},
@@ -168,7 +171,7 @@ const triviaCategoriesState = [
 					id: 33,
 					name: "All Categories",
 					value: 'addall',
-					checked: true
+					checked: false
 				}
 			]
 
@@ -208,17 +211,12 @@ const TriviaStart = (props) => {
 	const [categorysState, dispatch] = useReducer(categoryReducer, triviaCategoriesState)
 	const triviaContext = React.useContext(TriviaProvider.context) 
 	const userContext = React.useContext(UserProvider.context) 
-	const [qArray, setQArray] = useState([9]) 
 	const [selectedOption, setSelectedOption] = useState({ value: "easy", label: "Easy" })
 	const [selectOptionsQuestinsValue, setSelectOptionsQuestinsValue] = useState({value: 5, label: "Five"})
 	const [gettingQuestions, setGettingQuestions] = useState(false)
+	const [modalIsOpen, setModalIsOpen] = useState(false)
 
-	const handleChange = cat => {
-		dispatch({ 
-			type: !cat.checked ? "ADD_CAT" : "DEL_CAT", 
-			id: cat.id })
-	}
-
+	
 	useEffect(()=>{
 		triviaContext.setFinalAnswerArray([])
 		setGettingQuestions(false)
@@ -226,6 +224,7 @@ const TriviaStart = (props) => {
 
 	const handleSubmit = async(e) => {
 		e.preventDefault()
+		openModal()
 		setGettingQuestions(true)
 		await triviaContext.getAllQuestions(
 			selectOptionsQuestinsValue.value,
@@ -237,6 +236,20 @@ const TriviaStart = (props) => {
 		props.history.push("/trivia")
 }
 
+	const handleChange = cat => {
+		dispatch({ 
+			type: !cat.checked ? "ADD_CAT" : "DEL_CAT", 
+			id: cat.id })
+	}
+
+  const openModal = () => {
+    setModalIsOpen(true)
+  }
+ 
+  const afterOpenModal = () => {
+    // references are now sync'd and can be accessed.
+    // this.subtitle.style.color = '#f00';
+  }
 
 	//create mapped category buttons with reducer build in
 	const categorys = categorysState.map(cat => {
@@ -244,8 +257,8 @@ const TriviaStart = (props) => {
 				<button
 					className={
 						cat.checked
-							? "tracking-tighter h-auto w-7/12 my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
-							: "h-auto w-7/12 my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
+							? "tracking-tighter h-auto w-7/12 my-1 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
+							: "h-auto w-7/12 my-1 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
 					}
 					id={cat.id}
 					key={cat.id}
@@ -253,7 +266,6 @@ const TriviaStart = (props) => {
 					type='button'
 					onClick={() => {
 						dispatch({ type: !cat.checked ? "ADD_ALL_CAT" : "REM_ALL_CAT" })
-						setQArray([])
 					}}
 				>
 					{cat.name}
@@ -262,8 +274,8 @@ const TriviaStart = (props) => {
 				<button
 					className={
 						cat.checked
-							? "flex-1 h-auto my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
-							: "flex-1 h-auto my-2 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
+							? "tracking-tighter h-24 sm:h-20 w-32 my-1 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc text-black font-semibold py-2 px-4 border border-gray-400 rounded shadow-inner-md transition-all outline-none"
+							: "h-24 sm:h-20 w-32 my-1 mx-1 text-xl lg:text-2xl md:w-3/12 md:flex-none lg:w-1/4 bg-tc-lightest hover:bg-tc-lighter text-gray-800 font-semibold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none"
 					}
 					id={cat.id}
 					key={cat.id}
@@ -281,13 +293,18 @@ const TriviaStart = (props) => {
 	return (
 		<div>
 			<div className='container mx-auto w-screen flex flex-col items-center'>
+				<Fade>
 				<div className='w-11/12 md:text-lg lg:text-xl flex flex-col justify-center'>
 					<form
 						className='w-full flex flex-col justify-center text-center'
 						onSubmit={handleSubmit}
 					>
-						<h1 className='font-sans text-2xl'>Welcome {userContext.user["username"]}!</h1>
-						<p>Select the categories you would like for the upcoming trivia game!</p>
+						<h1 className='text-2xl'>Welcome to Trivia {userContext.user["username"]}!</h1>
+						<p className='text-xl'>
+							To start a game please select which categories you would like to answer questions
+							from, as well as difficulty and how many questions you would like to do. Afterwards
+							we will so how well you did!
+						</p>
 						<div className='flex flex-wrap justify-center'>
 							{categorys}
 							{/* displayed mapped category buttons  */}
@@ -337,22 +354,44 @@ const TriviaStart = (props) => {
 								})}
 							/>
 						</div>
+						<button
+							className='flex-1 w-7/12 my-2 mx-1 self-center md:w-5/12 md:flex-none bg-tc-lightest hover:bg-tc-lighter text-gray-900 font-bold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none text-2xl mb-24 h-auto'
+							type='Submit'
+						>
+							Start Game!
+						</button>
+						<Fade>
+						<Modal
 
-						{!gettingQuestions ? (
-							<button
-								className='flex-1 w-7/12 my-2 mx-1 self-center md:w-5/12 md:flex-none bg-tc-lightest hover:bg-tc-lighter text-gray-900 font-bold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none text-2xl mb-24 h-auto'
-								type='Submit'
-							>
-								Start Game!
-							</button>
-						) : (
-							<div className='flex-1 w-7/12 my-2 mx-1 self-center text-lg md:text-xl md:w-5/12 md:flex-none bg-tc2-lightest hover:bg-tc2-lighter text-gray-900 font-bold py-2 px-4 border border-gray-400 rounded shadow-md transition-all transition-duration-500 outline-none text-2xl cursor-wait'>
-								Retrieving Questions.... <Spinner /> ...setting up game
+							isOpen={modalIsOpen}
+							onAfterOpen={afterOpenModal()}
+							style={{
+								overlay: {
+									backgroundColor: 'rgba(0,0,0,.75)'
+								},
+								content: {
+									top: "40%",
+									left: "10%",
+									right: "10%",
+									bottom: "auto",
+									padding: "0",
+									// transform: "translate(-50%, -50%)",
+									margin: "0"
+								}
+							}}
+							contentLabel='Loading Modal'
+						>
+							<div className='text-center justify-left items-left w-full h-full bg-tc-lightest text-gray-900 font-bold py-4 px-4 shadow-inner-md transition-all transition-duration-500 outline-none text-2xl cursor-wait'>
+								<p>Retrieving Questions.... </p> 
+								<Spinner /> 
+								<p> Setting up game</p>
 							</div>
-						)}
+						</Modal>
+						</Fade>
 					</form>
 					<button type='button' onClick={() => triviaContext.setFinalAnswerArray} />
 				</div>
+				</Fade>
 			</div>
 		</div>
 	)
