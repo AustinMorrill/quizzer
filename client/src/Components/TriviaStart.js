@@ -245,7 +245,7 @@ const TriviaStart = (props) => {
   const openModal = () => {
     setModalIsOpen(true)
   }
- 
+
   const afterOpenModal = () => {
     // references are now sync'd and can be accessed.
     // this.subtitle.style.color = '#f00';
