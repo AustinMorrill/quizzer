@@ -4,7 +4,9 @@
   "description": "Quiz app using the Open Trivia API. Using React, Node, Express, and MongoDB",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "heroku-postbuild": "cd client && npm install --only=dev && npm install && npm run build"
   },
   "repository": {
     "type": "git",
@@ -24,5 +26,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.6.1",
     "morgan": "^1.9.1"
+  },
+  "engines": {
+    "node": "10.15.3"
   }
 }

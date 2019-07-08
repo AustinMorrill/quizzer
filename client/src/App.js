@@ -24,10 +24,10 @@ const  App = () => {
 					<Suspense fallback={<Spinner />}>
 						<div className='content__container'>
 							<Switch>
-								<Route path='/signup' component={Signup} />
-								<Route path='/login' component={Login} />
-								<ProtectedRoute path='/triviaStart' component={triviaStart} />
-								<ProtectedRoute path='/trivia' component={Trivia} />
+								{/* <Route path='/signup' component={Signup} />
+								<Route path='/login' component={Login} /> */}
+								<Route path='/triviaStart' component={triviaStart} />
+								<Route path='/trivia' component={Trivia} />
 								<Route exact path='/' render={() => <Redirect to='/triviaStart' />} />
 							</Switch>
 						</div>
